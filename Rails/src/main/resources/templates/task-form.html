@@ -1,0 +1,192 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout(${task.id == null ? 'Nova Tarefa' : 'Editar Tarefa'}, ~{::main-content})}"
+  lang="pt-BR"
+>
+  <head></head>
+  <body>
+    <th:block th:fragment="main-content">
+      <!-- =====================
+       TASK FORM
+       Task 3: Create / Edit
+       O backend passa: task (Task object, pode ser vazio para new)
+       ===================== -->
+
+      <div style="max-width: 600px">
+        <div style="margin-bottom: 1.5rem">
+          <h1 th:text="${task.id == null ? 'Nova Tarefa' : 'Editar Tarefa'}">
+            Nova Tarefa
+          </h1>
+          <p class="small">
+            <a th:href="@{/dashboard}">← Voltar ao dashboard</a>
+          </p>
+        </div>
+
+        <!-- server-side error -->
+        <div
+          class="alert alert-error"
+          th:if="${errorMessage}"
+          th:text="${errorMessage}"
+        >
+          Erro ao salvar.
+        </div>
+
+        <div class="form-card">
+          <!--
+        POST /tasks       → criar
+        POST /tasks/{id}  → atualizar
+        (Spring Boot não aceita PUT/DELETE de form HTML — usar _method ou
+         mapear direto no controller como POST)
+      -->
+          <form
+            id="task-form"
+            th:action="${task.id == null} ? @{/tasks} : @{/tasks/{id}(id=${task.id})}"
+            method="post"
+            novalidate
+          >
+            <input
+              type="hidden"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
+
+            <!-- hidden id para edição -->
+            <input type="hidden" name="id" th:value="${task.id}" />
+
+            <!-- Título -->
+            <div class="form-group">
+              <label for="title">Título *</label>
+              <input
+                id="title"
+                name="title"
+                type="text"
+                class="form-control"
+                placeholder="Ex: Estudar Spring Boot"
+                th:value="${task.title}"
+                maxlength="120"
+                autofocus
+              />
+            </div>
+
+            <!-- Descrição (opcional) -->
+            <div class="form-group">
+              <label for="description">Descrição</label>
+              <textarea
+                id="description"
+                name="description"
+                class="form-control"
+                rows="3"
+                placeholder="Detalhes opcionais..."
+                style="resize: vertical"
+                th:text="${task.description}"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <!-- Prioridade (Task 5) -->
+              <div class="form-group">
+                <label for="priority">Prioridade *</label>
+                <select id="priority" name="priority" class="form-control">
+                  <option value="HIGH" th:selected="${task.priority == 'HIGH'}">
+                    Alto
+                  </option>
+                  <option
+                    value="MEDIUM"
+                    th:selected="${task.priority == 'MEDIUM'}"
+                    selected
+                  >
+                    Médio
+                  </option>
+                  <option value="LOW" th:selected="${task.priority == 'LOW'}">
+                    Baixo
+                  </option>
+                </select>
+              </div>
+
+              <!-- Tipo -->
+              <div class="form-group">
+                <label for="type">Tipo *</label>
+                <select id="type" name="type" class="form-control">
+                  <option
+                    value="PESSOAL"
+                    th:selected="${task.type == 'PESSOAL'}"
+                  >
+                    Pessoal
+                  </option>
+                  <option
+                    value="OFICIAL"
+                    th:selected="${task.type == 'OFICIAL'}"
+                  >
+                    Oficial
+                  </option>
+                  <option value="ESTUDO" th:selected="${task.type == 'ESTUDO'}">
+                    Estudo
+                  </option>
+                  <option value="OUTRO" th:selected="${task.type == 'OUTRO'}">
+                    Outro
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Data de entrega (Task 3 / 5) -->
+            <div class="form-group">
+              <label for="dueDate">Data de entrega *</label>
+              <input
+                id="dueDate"
+                name="dueDate"
+                type="date"
+                class="form-control"
+                th:value="${task.dueDate != null ? #temporals.format(task.dueDate, 'yyyy-MM-dd') : ''}"
+              />
+            </div>
+
+            <!-- Status (só aparece na edição) -->
+            <div class="form-group" th:if="${task.id != null}">
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                  text-transform: none;
+                  letter-spacing: 0;
+                  font-size: 0.9rem;
+                  cursor: pointer;
+                "
+              >
+                <input
+                  type="checkbox"
+                  name="completed"
+                  value="true"
+                  class="status-check"
+                  th:checked="${task.completed}"
+                />
+                Marcar como concluída
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" style="width: auto">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Salvar
+              </button>
+              <a th:href="@{/dashboard}" class="btn btn-secondary">Cancelar</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>
